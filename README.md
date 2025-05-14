@@ -29,7 +29,7 @@
 
 - **Auto-generated summary text**  
   Dynamically generates a written summary (mini results section) of key network results, populated from the analysis (e.g., top central nodes, robustness conclusions).
-
+Q QqWWA`sz`
 ## Goals
 
 The aim of `netsum` is to make network analysis more accessible, interpretable, and visually engaging without requiring extensive R coding skills.
