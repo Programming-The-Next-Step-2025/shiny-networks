@@ -20,7 +20,8 @@ ui <- fluidPage(
 
     mainPanel(
       tableOutput("preview"),
-      verbatimTextOutput("checkResult")
+      verbatimTextOutput("checkResult"),
+      verbatimTextOutput("networkStatus")
     )
   )
 )
@@ -73,6 +74,16 @@ server <- function(input, output, session) {
     compute_network(df, vars = vars, group_var = group, method = method, tuning = tuning)
   })
 
+  output$networkStatus <- renderText({
+    req(input$run_network)
+    result <- networkResult()
+
+    msgs <- lapply(result$networks, function(net) attr(net, "empty_message"))
+    msgs <- unlist(msgs)
+
+    if (length(msgs) == 0) return("✅ Network(s) estimated successfully.")
+    return(paste(msgs, collapse = "\n"))
+  })
 
 }
 
