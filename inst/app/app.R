@@ -6,12 +6,20 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       fileInput("file", "Upload CSV File"),
+      checkboxGroupInput("vars", "Select variables for network:", choices = NULL),
+      selectInput("group", "Select grouping variable (optional):", choices = NULL, selected = NULL),
+      selectInput("method", "Network estimation method:",
+                  choices = c("EBICglasso", "glasso", "pcor", "cor_auto"),
+                  selected = "EBICglasso"),
+
+      numericInput("tuning", "Tuning parameter (gamma):", value = 0.5, min = 0, max = 1, step = 0.05),
+      actionButton("run_network", "Estimate Network"),
+
       actionButton("check", "Check Data")
     ),
 
     mainPanel(
-      tableOutput("preview"), # this is like a placeholder in the ui that i can
-                              # call on later in the server to fill
+      tableOutput("preview"),
       verbatimTextOutput("checkResult")
     )
   )
@@ -45,16 +53,25 @@ server <- function(input, output, session) {
   })
 
 
-#--------- Compute Networks ------------------------------------------
+#--------- update UI based on uploaded data ------------------------------------
 
+  observeEvent(data(), {
+    vars <- names(data())
+    updateCheckboxGroupInput(session, "vars", choices = vars, selected = vars)
+    updateSelectInput(session, "group", choices = c("", vars), selected = "")
+  })
 
+#--------- Compute Networks ----------------------------------------------------
 
+  networkResult <- eventReactive(input$run_network, {
+    df <- data()
+    vars <- input$vars
+    group <- if (input$group == "") NULL else input$group
+    method <- input$method
+    tuning <- input$tuning
 
-
-
-
-
-
+    compute_network(df, vars = vars, group_var = group, method = method, tuning = tuning)
+  })
 
 
 }
