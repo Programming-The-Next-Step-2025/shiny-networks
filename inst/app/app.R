@@ -33,6 +33,7 @@ ui <- fluidPage(
       textInput("plot_title", "Plot title:", value = "Network Graph"),
       selectInput("layout", "Layout:", choices = c("spring", "circle")),
       colourInput("label_color", "Label color:", value = "black"),
+      verbatimTextOutput("groupLegendLabels"),
 
       plotOutput("networkPlot")
     )
@@ -98,6 +99,14 @@ server <- function(input, output, session) {
     return(paste(msgs, collapse = "\n"))
   })
 #--------- Plot Networks ----------------------------------------------------
+  output$groupLegendLabels <- renderText({
+    group_names <- strsplit(input$group_names, ",\\s*")[[1]]
+    group_colors <- c(input$color1, input$color2)[seq_along(group_names)]
+
+    if (length(group_names) == 0) return(NULL)
+
+    paste0("Group Colors:\n", paste0("⬤ ", group_names, " = ", group_colors, collapse = "\n"))
+  })
 
   output$networkPlot <- renderPlot({
     req(input$run_network)
