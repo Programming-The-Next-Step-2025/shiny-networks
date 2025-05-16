@@ -16,7 +16,12 @@ ui <- fluidPage(
                   selected = "EBICglasso"),
 
       numericInput("tuning", "Tuning parameter (gamma):", value = 0.5, min = 0, max = 1, step = 0.05),
-      actionButton("run_network", "Estimate Network")
+      actionButton("run_network", "Estimate Network"),
+      textInput("group_names", "Group names (comma-separated):", placeholder = "e.g. Brain, Behavior"),
+      textInput("group_ranges", "Group indices (semicolon-separated):", placeholder = "e.g. 1:3;4:6"),
+      colourInput("color1", "Group 1 Color", "#3E9EAD"),
+      colourInput("color2", "Group 2 Color", "#3E6795")
+
     ),
 
     mainPanel(
@@ -100,12 +105,34 @@ server <- function(input, output, session) {
     result <- networkResult()
     net_list <- result$networks
 
+    group_names <- strsplit(input$group_names, ",\\s*")[[1]]
+    group_ranges <- strsplit(input$group_ranges, ";\\s*")[[1]]
+
+    valid_grouping <- length(group_names) == length(group_ranges)
+
+    if (valid_grouping) {
+      groups_list <- setNames(
+                              lapply(group_ranges, function(r) eval(parse(text = r))),
+                              group_names
+      )
+
+      group_colors <- setNames(
+                               c(input$color1, input$color2)[seq_along(group_names)],
+                               group_names
+      )
+    } else {
+      groups_list <- NULL
+      group_colors <- NULL
+    }
+
     if (length(net_list) == 1) {
       plot_network(
         net_list[[1]],
         title = input$plot_title,
         layout = input$layout,
-        label.color = input$label_color
+        label.color = input$label_color,
+        groups = groups_list,
+        group.colors = group_colors
       )
     } else {
       par(mfrow = c(1, length(net_list)))  # Side-by-side plots
@@ -114,7 +141,9 @@ server <- function(input, output, session) {
           net_list[[i]],
           title = paste0(input$plot_title, ": Group ", result$groups[i]),
           layout = input$layout,
-          label.color = input$label_color
+          label.color = input$label_color,
+          groups = groups_list,
+          group.colors = group_colors
         )
       }
     }
