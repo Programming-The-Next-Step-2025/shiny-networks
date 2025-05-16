@@ -2,4 +2,6 @@
 
 export(check_csv)
 export(compute_network)
+export(plot_network)
 importFrom(bootnet,estimateNetwork)
+importFrom(qgraph,qgraph)

@@ -1,4 +1,6 @@
+
 library(shiny)
+library(colourpicker)
 
 ui <- fluidPage(
   titlePanel("netsum - Network Analysis App"),
@@ -6,6 +8,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       fileInput("file", "Upload CSV File"),
+      actionButton("check", "Check Data"),
       checkboxGroupInput("vars", "Select variables for network:", choices = NULL),
       selectInput("group", "Select grouping variable (optional):", choices = NULL, selected = NULL),
       selectInput("method", "Network estimation method:",
@@ -13,15 +16,20 @@ ui <- fluidPage(
                   selected = "EBICglasso"),
 
       numericInput("tuning", "Tuning parameter (gamma):", value = 0.5, min = 0, max = 1, step = 0.05),
-      actionButton("run_network", "Estimate Network"),
-
-      actionButton("check", "Check Data")
+      actionButton("run_network", "Estimate Network")
     ),
 
     mainPanel(
       tableOutput("preview"),
       verbatimTextOutput("checkResult"),
-      verbatimTextOutput("networkStatus")
+      verbatimTextOutput("networkStatus"),
+
+      # customizing the plot
+      textInput("plot_title", "Plot title:", value = "Network Graph"),
+      selectInput("layout", "Layout:", choices = c("spring", "circle")),
+      colourInput("label_color", "Label color:", value = "black"),
+
+      plotOutput("networkPlot")
     )
   )
 )
@@ -84,6 +92,36 @@ server <- function(input, output, session) {
     if (length(msgs) == 0) return("✅ Network(s) estimated successfully.")
     return(paste(msgs, collapse = "\n"))
   })
+#--------- Plot Networks ----------------------------------------------------
+
+  output$networkPlot <- renderPlot({
+    req(input$run_network)
+
+    result <- networkResult()
+    net_list <- result$networks
+
+    if (length(net_list) == 1) {
+      plot_network(
+        net_list[[1]],
+        title = input$plot_title,
+        layout = input$layout,
+        label.color = input$label_color
+      )
+    } else {
+      par(mfrow = c(1, length(net_list)))  # Side-by-side plots
+      for (i in seq_along(net_list)) {
+        plot_network(
+          net_list[[i]],
+          title = paste0(input$plot_title, ": Group ", result$groups[i]),
+          layout = input$layout,
+          label.color = input$label_color
+        )
+      }
+    }
+  })
+
+
+
 
 }
 
