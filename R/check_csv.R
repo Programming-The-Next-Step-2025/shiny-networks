@@ -31,3 +31,4 @@ check_csv <- function(file_path) {
 
   return(list(message = "✅ Data looks good. No missing values detected.", data = df))
 }
+
