@@ -21,15 +21,32 @@
   - Closeness
   - Expected Influence
 
-- **Robustness analysis**  
-  Includes diagnostic plots to evaluate network stability.
-
-- **Shortest path finder**  
-  Computes and visually highlights the shortest path between any two nodes.
-
 - **Auto-generated summary text**  
   Dynamically generates a written summary (mini results section) of key network results, populated from the analysis (e.g., top central nodes, robustness conclusions).
-Q QqWWA`sz`
+
 ## Goals
 
 The aim of `netsum` is to make network analysis more accessible, interpretable, and visually engaging without requiring extensive R coding skills.
+
+---
+
+## 🚀 Launch the Shiny App
+
+The `netsum` package includes an interactive Shiny app for estimating and visualizing networks.
+
+### 📦 Installation
+
+To install `netsum` from your local development folder:
+
+1. Make sure you have the [`devtools`](https://cran.r-project.org/package=devtools) package installed:
+
+
+   `install.packages("devtools")`
+   
+2. Then, from your R session, run:
+    `devtools::install()`
+    
+After installation, launch the app using:
+    `netsum::launch_netsum_app()`
+    
+    
