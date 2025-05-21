@@ -10,15 +10,17 @@ ui <- fluidPage(
       fileInput("file", "Upload CSV File"),
       actionButton("check", "Check Data"),
       checkboxGroupInput("vars", "Select variables for network:", choices = NULL),
-      selectInput("group", "Select grouping variable (optional):", choices = NULL, selected = NULL),
+      selectizeInput("group", "Select grouping variable (optional):",
+                     choices = c("None" = ""),selected = "",
+                     options = list(placeholder = 'None selected')),
       selectInput("method", "Network estimation method:",
-                  choices = c("EBICglasso", "glasso", "pcor", "cor_auto"),
+                  choices = c("EBICglasso", "glasso", "pcor", "cor"),
                   selected = "EBICglasso"),
 
-      numericInput("tuning", "Tuning parameter (gamma):", value = 0.5, min = 0, max = 1, step = 0.05),
+      numericInput("tuning", "Tuning parameter (gamma):", value = 0.25, min = 0, max = 1, step = 0.05),
       actionButton("run_network", "Estimate Network"),
-      textInput("group_names", "Group names (comma-separated):", placeholder = "e.g. Brain, Behavior"),
-      textInput("group_ranges", "Group indices (semicolon-separated):", placeholder = "e.g. 1:3;4:6"),
+      textInput("group_names", "Group names for coloring nodes (comma-separated):", placeholder = "e.g. Brain, Behavior"),
+      textInput("group_ranges", "Group indices for coloring nodes (semicolon-separated):", placeholder = "e.g. 1:3;4:6"),
       colourInput("color1", "Group 1 Color", "#3E9EAD"),
       colourInput("color2", "Group 2 Color", "#3E6795")
 
@@ -33,7 +35,7 @@ ui <- fluidPage(
       textInput("plot_title", "Plot title:", value = "Network Graph"),
       selectInput("layout", "Layout:", choices = c("spring", "circle")),
       colourInput("label_color", "Label color:", value = "black"),
-      verbatimTextOutput("groupLegendLabels"),
+      htmlOutput("groupLegendLabels"),
 
       plotOutput("networkPlot")
     )
@@ -73,7 +75,7 @@ server <- function(input, output, session) {
   observeEvent(data(), {
     vars <- names(data())
     updateCheckboxGroupInput(session, "vars", choices = vars, selected = vars)
-    updateSelectInput(session, "group", choices = c("", vars), selected = "")
+    updateSelectizeInput(session, "group", choices = c("None" = "", vars), selected = "", server = TRUE)
   })
 
 #--------- Compute Networks ----------------------------------------------------
@@ -83,7 +85,7 @@ server <- function(input, output, session) {
     vars <- input$vars
     group <- if (input$group == "") NULL else input$group
     method <- input$method
-    tuning <- input$tuning
+    tuning <- if (method %in% c("pcor", "cor")) NULL else input$tuning
 
     compute_network(df, vars = vars, group_var = group, method = method, tuning = tuning)
   })
@@ -99,15 +101,21 @@ server <- function(input, output, session) {
     return(paste(msgs, collapse = "\n"))
   })
 #--------- Plot Networks ----------------------------------------------------
-  output$groupLegendLabels <- renderText({
+  output$groupLegendLabels <- renderUI({
     group_names <- strsplit(input$group_names, ",\\s*")[[1]]
     group_colors <- c(input$color1, input$color2)[seq_along(group_names)]
 
     if (length(group_names) == 0) return(NULL)
 
-    paste0("Group Colors:\n", paste0("⬤ ", group_names, " = ", group_colors, collapse = "\n"))
+    HTML(paste0(
+      "<strong>Group Colors:</strong><br>",
+      paste0(
+        "<span style='font-size: 20px; color:", group_colors, "'>&#11044;</span> ",
+        group_names, " = ", group_colors,
+        collapse = "<br>"
+      )
+    ))
   })
-
   output$networkPlot <- renderPlot({
     req(input$run_network)
 
@@ -121,8 +129,10 @@ server <- function(input, output, session) {
 
     if (valid_grouping) {
       groups_list <- setNames(
-                              lapply(group_ranges, function(r) eval(parse(text = r))),
-                              group_names
+        lapply(group_ranges, function(r) {
+          tryCatch(eval(parse(text = r)), error = function(e) NULL)
+        }),
+        group_names
       )
 
       group_colors <- setNames(

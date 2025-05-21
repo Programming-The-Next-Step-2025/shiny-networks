@@ -33,6 +33,9 @@ compute_network <- function(data, vars, group_var = NULL, method = "EBICglasso",
     }
   }
 
+  #define methods that don't accept tuning
+  no_tuning_methods <- c("pcor", "cor")
+
   # Check all selected vars are numeric
   if (!all(sapply(data[, vars, drop = FALSE], is.numeric))) {
     stop("All selected variables must be numeric.")
@@ -40,11 +43,13 @@ compute_network <- function(data, vars, group_var = NULL, method = "EBICglasso",
 
   # Helper to estimate a single network
   estimate <- function(df) {
-    net <- bootnet::estimateNetwork(
-      df,
-      default = method,
-      tuning = tuning
-    )
+    if (method %in% no_tuning_methods) {
+      net <- bootnet::estimateNetwork(df,default = method)
+
+    } else {
+      net <- bootnet::estimateNetwork(df,default = method,tuning = tuning)
+    }
+
     if (all(net$graph == 0)) {
       attr(net, "empty_message") <- "⚠️ Empty network detected (no edges). Try adjusting tuning."
     }
@@ -75,4 +80,6 @@ compute_network <- function(data, vars, group_var = NULL, method = "EBICglasso",
 
   return(list(networks = network_list, groups = groups))
 }
+
+
 
