@@ -2,6 +2,7 @@
 
 export(check_csv)
 export(compute_network)
+export(launch_netsum_app)
 export(plot_network)
 importFrom(bootnet,estimateNetwork)
 importFrom(qgraph,qgraph)
