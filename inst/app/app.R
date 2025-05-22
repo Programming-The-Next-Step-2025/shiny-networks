@@ -132,7 +132,7 @@ server <- function(input, output, session) {
 
     net_list <- result$networks
 
-    # 🛡 Robust group name handling
+    # Robust group name handling
     group_names <- tryCatch({
       if (!is.null(input$group_names) && nzchar(input$group_names)) {
         strsplit(trimws(input$group_names), ",\\s*")[[1]]
@@ -141,7 +141,7 @@ server <- function(input, output, session) {
       }
     }, error = function(e) character(0))
 
-    # 🛡 Robust group range handling
+    # Robust group range handling
     group_ranges <- tryCatch({
       if (!is.null(input$group_ranges) && nzchar(input$group_ranges)) {
         strsplit(trimws(input$group_ranges), ";\\s*")[[1]]

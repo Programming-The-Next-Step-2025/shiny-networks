@@ -20,4 +20,7 @@ Imports:
   qgraph,
   shiny,
   colourpicker
-  
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
