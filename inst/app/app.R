@@ -40,7 +40,13 @@ ui <- fluidPage(
 
       # section for top nodes
       h4("Top 5 Central Nodes (by Strength)"),
-      tableOutput("topNodes")
+      tableOutput("topNodes"),
+
+      #Export Buttons
+      h4("Download Results"),
+      downloadButton("downloadPlotPNG", "Download Plot (PNG)"),
+      downloadButton("downloadPlotPDF", "Download Plot (PDF)"),
+      downloadButton("downloadCentrality", "Download Centrality Table (CSV)")
 
     )
   )
@@ -173,76 +179,30 @@ server <- function(input, output, session) {
   })
 
 
-
   #--------- Plot Networks --------------------------------------------------------
-   output$networkPlot <- renderPlot({
-     cat("🔍 renderPlot starting\n")
+  output$networkPlot <- renderPlot({
     req(input$run_network)
     result <- tryCatch(networkResult(), error = function(e) NULL)
-    cat("🔍 networkResult safely evaluated\n")
     if (is.null(result) || is.null(result$networks)) return(NULL)
 
     net_list <- result$networks
 
-    # Robust group name handling
-    group_names <- tryCatch({
-      if (!is.null(input$group_names) && nzchar(input$group_names)) {
-        strsplit(trimws(input$group_names), ",\\s*")[[1]]
-      } else {
-        character(0)
-      }
-    }, error = function(e) character(0))
-
-    # Build node label abbreviation to full name map
-    original_labels <- input$vars
-    label_map <- sapply(original_labels, function(x) {
-      abbrev <- paste0(regmatches(x, gregexpr("[A-Z]", x))[[1]], collapse = "")
-      if (nchar(abbrev) < 3) abbrev <- substr(x, 1, 3)
-      substr(abbrev, 1, 3)
-    })
-    names(label_map) <- original_labels
-
-    # Robust group range handling
-    group_ranges <- tryCatch({
-      if (!is.null(input$group_ranges) && nzchar(input$group_ranges)) {
-        strsplit(trimws(input$group_ranges), ";\\s*")[[1]]
-      } else {
-        character(0)
-      }
-    }, error = function(e) character(0))
-
-    valid_grouping <- length(group_names) == length(group_ranges) &&
-      length(group_names) > 0
-
-    groups_list <- NULL
-    group_colors <- NULL
-
-    if (valid_grouping) {
-      parsed_ranges <- lapply(group_ranges, function(r) {
-        tryCatch(eval(parse(text = r)), error = function(e) NULL)
-      })
-
-      if (all(sapply(parsed_ranges, Negate(is.null)))) {
-        groups_list <- setNames(parsed_ranges, group_names)
-
-        color_inputs_exist <- all(sapply(seq_along(group_names), function(i) {
-          !is.null(input[[paste0("group_color_", i)]])
-        }))
-
-        if (color_inputs_exist) {
-          group_colors <- list()
-          for (i in seq_along(group_names)) {
-            color_input <- paste0("group_color_", i)
-            group_colors[[group_names[i]]] <- input[[color_input]]
-          }
-        }
-      }
+    plot_titles <- strsplit(input$plot_title, ",\\s*")[[1]]
+    while (length(plot_titles) < length(net_list)) {
+      plot_titles <- c(plot_titles, "")
     }
+
+    # COLOR AND GROUP HANDLING
+    group_names <- strsplit(trimws(input$group_names), ",\\s*")[[1]]
+    group_ranges <- strsplit(trimws(input$group_ranges), ";\\s*")[[1]]
+    parsed <- parse_group_colors(group_names, group_ranges, input)
+    groups_list <- parsed$groups_list
+    group_colors <- parsed$group_colors
 
     if (length(net_list) == 1) {
       plot_network(
         net_list[[1]],
-        title = input$plot_title,
+        title = plot_titles[1],
         layout = input$layout,
         label.color = input$label_color,
         groups = groups_list,
@@ -253,7 +213,7 @@ server <- function(input, output, session) {
       for (i in seq_along(net_list)) {
         plot_network(
           net_list[[i]],
-          title = paste0(input$plot_title, ": Group ", result$groups[i]),
+          title = plot_titles[i],
           layout = input$layout,
           label.color = input$label_color,
           groups = groups_list,
@@ -263,6 +223,126 @@ server <- function(input, output, session) {
     }
   })
 
+
+  #--------- Updated Plot Download Handlers (with group/colors/layout) -------------
+
+  output$downloadPlotPNG <- downloadHandler(
+    filename = function() {
+      paste0("network_plot_", Sys.Date(), ".png")
+    },
+    content = function(file) {
+      result <- networkResult()
+
+      # COLOR & GROUP HANDLING
+      group_names <- strsplit(trimws(input$group_names), ",\\s*")[[1]]
+      group_ranges <- strsplit(trimws(input$group_ranges), ";\\s*")[[1]]
+      parsed <- parse_group_colors(group_names, group_ranges, input)
+      groups_list <- parsed$groups_list
+      group_colors <- parsed$group_colors
+
+      titles <- strsplit(input$plot_title, ",\\s*")[[1]]
+      while (length(titles) < length(result$networks)) {
+        titles <- c(titles, "")
+      }
+
+      png(file, width = 1000, height = 800)
+      if (length(result$networks) == 1) {
+        plot_network(
+          result$networks[[1]],
+          title = titles[1],
+          layout = input$layout,
+          label.color = input$label_color,
+          groups = groups_list,
+          group.colors = group_colors,
+          filename = NULL
+        )
+      } else {
+        par(mfrow = c(1, length(result$networks)))
+        for (i in seq_along(result$networks)) {
+          plot_network(
+            result$networks[[i]],
+            title = titles[i],
+            layout = input$layout,
+            label.color = input$label_color,
+            groups = groups_list,
+            group.colors = group_colors,
+            filename = NULL
+          )
+        }
+      }
+      dev.off()
+    }
+  )
+
+
+
+  output$downloadPlotPDF <- downloadHandler(
+    filename = function() {
+      paste0("network_plot_", Sys.Date(), ".pdf")
+    },
+    content = function(file) {
+      result <- networkResult()
+
+      # COLOR & GROUP HANDLING
+      group_names <- strsplit(trimws(input$group_names), ",\\s*")[[1]]
+      group_ranges <- strsplit(trimws(input$group_ranges), ";\\s*")[[1]]
+      parsed <- parse_group_colors(group_names, group_ranges, input)
+      groups_list <- parsed$groups_list
+      group_colors <- parsed$group_colors
+
+      titles <- strsplit(input$plot_title, ",\\s*")[[1]]
+      while (length(titles) < length(result$networks)) {
+        titles <- c(titles, "")
+      }
+
+      pdf(file, width = 11, height = 8.5)
+      if (length(result$networks) == 1) {
+        plot_network(
+          result$networks[[1]],
+          title = titles[1],
+          layout = input$layout,
+          label.color = input$label_color,
+          groups = groups_list,
+          group.colors = group_colors,
+          filename = NULL
+        )
+      } else {
+        par(mfrow = c(1, length(result$networks)))
+        for (i in seq_along(result$networks)) {
+          plot_network(
+            result$networks[[i]],
+            title = titles[i],
+            layout = input$layout,
+            label.color = input$label_color,
+            groups = groups_list,
+            group.colors = group_colors,
+            filename = NULL
+          )
+        }
+      }
+      dev.off()
+    }
+  )
+
+
+
+output$downloadCentrality <- downloadHandler(
+  filename = function() {
+    paste0("centrality_table_", Sys.Date(), ".csv")
+  },
+  content = function(file) {
+    tables <- centralityTables()
+    if (length(tables) == 1) {
+      write.csv(tables[[1]], file, row.names = FALSE)
+    } else {
+      all <- do.call(rbind, tables)
+      write.csv(all, file, row.names = FALSE)
+    }
+  }
+)
+
 }
 
 shinyApp(ui, server)
+
+
