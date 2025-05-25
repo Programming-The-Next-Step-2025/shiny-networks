@@ -38,19 +38,27 @@
 plot_network <- function(net,
                          title = "Network Graph",
                          layout = "spring",
-                         labels = NULL,
                          label.color = "black",
                          node.color = NULL,
                          groups = NULL,
                          group.colors = NULL,
-                         legend = TRUE,
+                         legend = FALSE,
                          legend.cex = 0.5) {
 
   nodes <- colnames(net$graph)
 
-  if (is.null(labels)) {
-    labels <- substr(nodes, 1, 3)
+  # Abbreviate node labels: use first 3 uppercase letters if available
+  abbreviate_node <- function(name) {
+    caps <- unlist(regmatches(name, gregexpr("[A-Z]", name)))
+    if (length(caps) >= 3) {
+      paste(caps[1:3], collapse = "")
+    } else {
+      substr(name, 1, 3)
+    }
   }
+
+  labels <- sapply(nodes, abbreviate_node)
+  names(labels) <- nodes  # Map full names to abbreviations
 
   # Handle group-based coloring if specified
   if (!is.null(groups) && !is.null(group.colors)) {
@@ -68,15 +76,12 @@ plot_network <- function(net,
     color = node.color,
     groups = groups,
     title = title,
-    legend = legend,
+    legend = FALSE,
     legend.mode = "names",
-    legend.cex = legend.cex
+    legend.cex = legend.cex,
+    nodeNames = nodes  # Set full names for the legend
   )
 }
-
-
-
-
 
 
 

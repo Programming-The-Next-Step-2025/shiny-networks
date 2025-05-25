@@ -36,7 +36,12 @@ ui <- fluidPage(
       colourInput("label_color", "Label color:", value = "black"),
       htmlOutput("groupLegendLabels"),
 
-      plotOutput("networkPlot")
+      plotOutput("networkPlot"),
+
+      # section for top nodes
+      h4("Top 5 Central Nodes (by Strength)"),
+      tableOutput("topNodes")
+
     )
   )
 )
@@ -73,6 +78,7 @@ server <- function(input, output, session) {
   networkResult <- eventReactive(input$run_network, {
     df <- data()
     vars <- input$vars
+    print(vars) # for debugging
     group <- if (input$group == "") NULL else input$group
     method <- input$method
     tuning <- if (method %in% c("pcor", "cor")) NULL else input$tuning
@@ -87,6 +93,39 @@ server <- function(input, output, session) {
     msgs <- unlist(msgs)
     if (length(msgs) == 0) return("✅ Network(s) estimated successfully.")
     return(paste(msgs, collapse = "\n"))
+  })
+
+  #--------- Centrality Computation ------------------------------------------------
+  centralityTables <- reactive({
+    result <- networkResult()
+    if (is.null(result) || is.null(result$networks)) return(NULL)
+
+    net_list <- result$networks
+    group_labels <- result$groups
+
+    tables <- lapply(seq_along(net_list), function(i) {
+      net <- net_list[[i]]
+      label <- if (!is.null(group_labels)) group_labels[i] else NULL
+      get_centrality_table(net, group = label)
+    })
+
+    names(tables) <- if (!is.null(group_labels)) group_labels else "Network"
+    return(tables)
+  })
+
+  #--------- Render Top 5 Central Nodes -------------------------------------------
+  output$topNodes <- renderTable({
+    tables <- centralityTables()
+    if (length(tables) == 0) return(NULL)
+
+    top_list <- lapply(names(tables), function(group) {
+      tab <- tables[[group]]
+      top_nodes <- tab[order(-tab$Strength), ][1:min(5, nrow(tab)), ]
+      top_nodes$Group <- group
+      top_nodes
+    })
+
+    do.call(rbind, top_list)
   })
 
   #--------- Dynamic Color Pickers ------------------------------------------------
@@ -105,22 +144,35 @@ server <- function(input, output, session) {
 
   #--------- Group Legend ---------------------------------------------------------
   output$groupLegendLabels <- renderUI({
-    group_names <- strsplit(trimws(input$group_names), ",\\s*")[[1]]
-    if (length(group_names) == 1 && group_names == "") return(NULL)
+    result <- networkResult()
+    if (is.null(result) || is.null(result$networks)) return(NULL)
 
-    group_colors <- sapply(seq_along(group_names), function(i) {
-      input[[paste0("group_color_", i)]] %||% "#999999"
-    })
+    original_labels <- input$vars
+
+    # Smarter abbreviation: 3 uppercase letters if present, otherwise fallback
+    abbreviate_node <- function(name) {
+      caps <- unlist(regmatches(name, gregexpr("[A-Z]", name)))
+      if (length(caps) >= 3) {
+        paste(caps[1:3], collapse = "")
+      } else {
+        clean <- gsub("[^a-zA-Z]", "", name)
+        substr(clean, 1, 3)
+      }
+    }
+
+    label_map <- sapply(original_labels, abbreviate_node)
+    names(label_map) <- original_labels
 
     HTML(paste0(
-      "<strong>Group Colors:</strong><br>",
+      "<strong>Node Legend:</strong><br>",
       paste0(
-        "<span style='font-size: 20px; color:", group_colors, "'>&#11044;</span> ",
-        group_names, " = ", group_colors,
+        "<span style='font-family: sans-serif;'>", label_map, ": ", names(label_map), "</span>",
         collapse = "<br>"
       )
     ))
   })
+
+
 
   #--------- Plot Networks --------------------------------------------------------
    output$networkPlot <- renderPlot({
@@ -140,6 +192,15 @@ server <- function(input, output, session) {
         character(0)
       }
     }, error = function(e) character(0))
+
+    # Build node label abbreviation to full name map
+    original_labels <- input$vars
+    label_map <- sapply(original_labels, function(x) {
+      abbrev <- paste0(regmatches(x, gregexpr("[A-Z]", x))[[1]], collapse = "")
+      if (nchar(abbrev) < 3) abbrev <- substr(x, 1, 3)
+      substr(abbrev, 1, 3)
+    })
+    names(label_map) <- original_labels
 
     # Robust group range handling
     group_ranges <- tryCatch({
@@ -203,6 +264,5 @@ server <- function(input, output, session) {
   })
 
 }
-
 
 shinyApp(ui, server)

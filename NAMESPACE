@@ -2,7 +2,9 @@
 
 export(check_csv)
 export(compute_network)
+export(get_centrality_table)
 export(launch_netsum_app)
 export(plot_network)
 importFrom(bootnet,estimateNetwork)
+importFrom(qgraph,centrality_auto)
 importFrom(qgraph,qgraph)
