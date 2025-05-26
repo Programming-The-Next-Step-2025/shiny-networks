@@ -42,6 +42,10 @@ ui <- fluidPage(
       h4("Top 5 Central Nodes (by Strength)"),
       tableOutput("topNodes"),
 
+      # section for centrality summary
+      h4("Centrality Summary"),
+      uiOutput("centralitySummary"),
+
       #Export Buttons
       h4("Download Results"),
       downloadButton("downloadPlotPNG", "Download Plot (PNG)"),
@@ -132,6 +136,21 @@ server <- function(input, output, session) {
     })
 
     do.call(rbind, top_list)
+  })
+
+  #--------- Render Centrality Summary Text ----------------------------------------
+  output$centralitySummary <- renderUI({
+    tables <- centralityTables()
+    if (length(tables) == 0) return("")
+
+    combined <- do.call(rbind, tables)
+    summary_text <- generate_centrality_summary(combined)
+
+    # Split into paragraphs by \n\n and wrap each in a <p> tag
+    paragraphs <- strsplit(summary_text, "\n\n")[[1]]
+    wrapped <- paste0("<p style='margin: 0.3em 0;'>", paragraphs, "</p>", collapse = "\n")
+
+    HTML(paste0("<div style='font-family: sans-serif; font-size: 15px;'>", wrapped, "</div>"))
   })
 
   #--------- Dynamic Color Pickers ------------------------------------------------
