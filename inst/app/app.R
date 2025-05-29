@@ -31,7 +31,7 @@ ui <- fluidPage(
       verbatimTextOutput("networkStatus"),
 
       # customizing the plot
-      textInput("plot_title", "Plot title:", value = "Network Graph"),
+      textInput("plot_title", "Plot title (comma-separated):", value = "Network Graph"),
       selectInput("layout", "Layout:", choices = c("spring", "circle")),
       colourInput("label_color", "Label color:", value = "black"),
       htmlOutput("groupLegendLabels"),
