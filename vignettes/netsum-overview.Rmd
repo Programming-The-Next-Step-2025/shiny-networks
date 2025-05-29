@@ -1,101 +1,159 @@
 ---
 title: "netsum-overview"
-output: rmarkdown::html_vignette
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+  rmarkdown::html_vignette: default
 vignette: >
   %\VignetteIndexEntry{netsum-overview}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
+# Using the `netsum` App for Network Analysis
+
 ## Introduction
 
-`netsum` is an R package and Shiny web application designed to make network analysis more accessible for psychological and behavioral data.\
-It provides a point-and-click interface for estimating, visualizing, and interpreting networks without needing to write R code.
+The `netsum` package provides a Shiny interface for estimating and visualizing psychological or neural networks from user-uploaded data.
 
-This vignette serves as a quick overview and usage guide.
+### What you will learn
 
-------------------------------------------------------------------------
+In this vignette, you will learn how to:
 
-## Features
+-   Install the package
+-   Launch and navigate the app
+-   Upload and validate your data
+-   Estimate networks with multiple methods
+-   Customize network plots and color groupings
+-   Analyze centrality and read narrative summaries
+-   Export plots and tables
+-   Validate functionality via reproducible examples
 
--   Upload CSV files with automatic validation (checks for format and missing values)
--   Select variables to include as nodes in the network
--   Choose from multiple network estimation methods (`EBICglasso`, `glasso`, `pcor`, `cor`)
--   Group-wise network estimation (optional)
--   Fully customizable network plots
-    -   Custom plot title, layout, and label color
-    -   Dynamic node grouping and color selection
--   Live network summary messages (e.g., success warnings, empty edges)
--   Launch the app with a single function: `netsum::launch_netsum_app()`
+## Installation
 
-------------------------------------------------------------------------
+Install `netsum` from GitHub or into an **renv** project:
 
-## Installation and example work flow
+``` r
+# From GitHub
+remotes::install_github("Programming-The-Next-Step-2025/shiny-networks")
 
-To install `netsum` from a local folder:
+# Or in renv
+renv::install("Programming-The-Next-Step-2025/shiny-networks")
+```
 
-```{r, eval = FALSE}
+For local development:
+
+``` r
+# From your package root
 install.packages(".", repos = NULL, type = "source")
 ```
 
-After installation, launch the app using:
+## Launching the App
 
-```{r, eval = FALSE}
+Load and launch:
+
+``` r
 library(netsum)
 launch_netsum_app()
 ```
 
-This will open the interactive app in your default web browser.
-
 ## Using the App
 
-Once launched:
+### Uploading Data
 
-1.  Upload a .csv file with numeric variables
+Upload a `.csv` via **Upload CSV File** and click **Check Data**. Select nodes and (optional) group variables.
 
-2.  Click "Check Data" to verify format and missing values
+```{r screenshot-upload, echo=FALSE, out.width='80%', fig.cap='Sample data upload screen'}
+ knitr::include_graphics("figures/upload_csv.png")
+```
 
-3.  Select variables to include as network nodes
+### Estimating Networks
 
-4.  Optionally specify a grouping variable (e.g., by condition)
+Select an estimation method:
 
-5.  Choose a network estimation method
+-   **EBICglasso** (default)
+-   **glasso**
+-   **pcor**
+-   **cor**
 
-6.  Set a tuning parameter if applicable (only for EBICglasso and glasso")
+Adjust `gamma` if needed and click **Estimate Network**.
 
-7.  Click "Estimate Network"
+### Plot Customization
+
+Customize layout, title, labels, and group coloring:
+
+```{r screenshot-plot-customization, echo=FALSE, out.width='43%', fig.cap='Example network plot customization screen'}
+ knitr::include_graphics("figures/plot_customization.png")
+```
+
+### Output Plot 
+
+```{r screenshot-plot, echo=FALSE, out.width='80%', fig.cap='Example network plot'}
+ knitr::include_graphics("figures/plot.png")
+```
+
+### Centrality Analysis
+
+`netsum` computes:
+
+-   **Strength**
+-   **Betweenness**
+-   **Closeness**
+-   **Expected Influence**
+
+It shows a table of top 5 nodes by Strength and a narrative summary:
+
+```{r screenshot-table, echo=FALSE, out.width='50%', fig.cap='Example centrality table'}
+ knitr::include_graphics("figures/centrality_table.png")
+```
+
+The narrative summary appears below:
+
+```{r screenshot-summary, echo=FALSE, out.width='80%'}
+ knitr::include_graphics("figures/centrality_summary.png")
+```
+
+## Download Options
+
+You can export your results using the buttons in the main panel:
+
+-   **Plot (PNG/PDF)**
+-   **Centrality Table (CSV)**
 
 
-You will see the network plot update in real time. You can also:
+## Testing and Reproducibility
 
--   Add group names and node ranges (e.g., 1:3;4:6)
+Validate with a simulated network:
 
--   Pick custom colors dynamically for each group
+```{r imulate-network, echo=TRUE, include=TRUE, results='hide', fig.show='hide', message=FALSE, warning=FALSE}
+library(MASS)
+library(netsum)
 
--   Adjust label color, layout, and title
+set.seed(42)
+Sigma <- diag(4)
+Sigma[1,3] <- Sigma[3,1] <- 0.8
+Sigma[2,4] <- Sigma[4,2] <- 0.8
 
+df_sim <- MASS::mvrnorm(200, rep(0, 4), Sigma) |> as.data.frame()
+colnames(df_sim) <- c("A","B","C","D")
+net_sim <- compute_network(df_sim, vars = colnames(df_sim), method = "cor")
+g <- net_sim$networks[[1]]
+plot_network(g, title = "Simulated A–C/B–D Network", layout = "spring", label.color = "black")
+tab_sim <- get_centrality_table(g)
+cat(generate_centrality_summary(tab_sim))
+```
 
-## Notes
+## Author and Credits
 
-The app is built using `shiny`, `bootnet`, `qgraph`, and `colourpicker`.
-
-Network plots are drawn using the `plot_network()` function.
-
-Estimation logic is handled by `compute_network()`.
-
-The app dynamically adapts based on user input (e.g., color pickers appear only if groups are named).
-
-
-
-## Authors and Credits
-
-This vignette is part of the the *Programming the Next Step 2025* course.  
-Developed by Lucas Straub.
-
+-   **Author**: Lucas Straub
+-   **Repository**: <https://github.com/Programming-The-Next-Step-2025/shiny-networks>
+-   **License**: MIT
+-   For bug reports and contributions, submit an issue on GitHub.
