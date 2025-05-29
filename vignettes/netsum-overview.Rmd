@@ -1,0 +1,101 @@
+---
+title: "netsum-overview"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{netsum-overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+`netsum` is an R package and Shiny web application designed to make network analysis more accessible for psychological and behavioral data.\
+It provides a point-and-click interface for estimating, visualizing, and interpreting networks without needing to write R code.
+
+This vignette serves as a quick overview and usage guide.
+
+------------------------------------------------------------------------
+
+## Features
+
+-   Upload CSV files with automatic validation (checks for format and missing values)
+-   Select variables to include as nodes in the network
+-   Choose from multiple network estimation methods (`EBICglasso`, `glasso`, `pcor`, `cor`)
+-   Group-wise network estimation (optional)
+-   Fully customizable network plots
+    -   Custom plot title, layout, and label color
+    -   Dynamic node grouping and color selection
+-   Live network summary messages (e.g., success warnings, empty edges)
+-   Launch the app with a single function: `netsum::launch_netsum_app()`
+
+------------------------------------------------------------------------
+
+## Installation and example work flow
+
+To install `netsum` from a local folder:
+
+```{r, eval = FALSE}
+install.packages(".", repos = NULL, type = "source")
+```
+
+After installation, launch the app using:
+
+```{r, eval = FALSE}
+library(netsum)
+launch_netsum_app()
+```
+
+This will open the interactive app in your default web browser.
+
+## Using the App
+
+Once launched:
+
+1.  Upload a .csv file with numeric variables
+
+2.  Click "Check Data" to verify format and missing values
+
+3.  Select variables to include as network nodes
+
+4.  Optionally specify a grouping variable (e.g., by condition)
+
+5.  Choose a network estimation method
+
+6.  Set a tuning parameter if applicable (only for EBICglasso and glasso")
+
+7.  Click "Estimate Network"
+
+
+You will see the network plot update in real time. You can also:
+
+-   Add group names and node ranges (e.g., 1:3;4:6)
+
+-   Pick custom colors dynamically for each group
+
+-   Adjust label color, layout, and title
+
+
+## Notes
+
+The app is built using `shiny`, `bootnet`, `qgraph`, and `colourpicker`.
+
+Network plots are drawn using the `plot_network()` function.
+
+Estimation logic is handled by `compute_network()`.
+
+The app dynamically adapts based on user input (e.g., color pickers appear only if groups are named).
+
+
+
+## Authors and Credits
+
+This vignette is part of the the *Programming the Next Step 2025* course.  
+Developed by Lucas Straub.
+

@@ -1,16 +1,18 @@
 Package: netsum
-Type: Package
-Title: What the Package Does (Title Case)
+Type: Package/ Shiny app
+Title: A Shiny App for Network Estimation, Visualization, and Summary
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Lucas", "Straub",
+      email = "lucasstraub@yahoo.de",
       role = c("aut", "cre")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Description: A point-and-click Shiny application for estimating and visualizing 
+    psychological or behavioral networks. Supports multiple estimation methods, 
+    dynamic grouping and node coloring, centrality analysis, and auto-generated 
+    summaries. Suitable for users with minimal R experience.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
@@ -20,4 +22,7 @@ Imports:
   qgraph,
   shiny,
   colourpicker
-  
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

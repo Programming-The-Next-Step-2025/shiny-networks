@@ -2,47 +2,47 @@
 % Please edit documentation in R/plot_network.R
 \name{plot_network}
 \alias{plot_network}
-\title{Plot a network graph using qgraph}
+\title{Plot a network graph using qgraph (with optional export)}
 \usage{
 plot_network(
   net,
   title = "Network Graph",
   layout = "spring",
-  labels = NULL,
   label.color = "black",
   node.color = NULL,
   groups = NULL,
   group.colors = NULL,
-  legend = TRUE,
-  legend.cex = 0.5
+  legend = FALSE,
+  legend.cex = 0.5,
+  filename = NULL
 )
 }
 \arguments{
-\item{net}{A bootnetResult object (as returned by compute_network).}
+\item{net}{A bootnetResult object (from compute_network()).}
 
 \item{title}{Plot title.}
 
 \item{layout}{Graph layout ("spring" or "circle").}
 
-\item{labels}{Vector of node labels. Default = first 3 letters of variable names.}
-
 \item{label.color}{Color for node labels.}
 
-\item{node.color}{Vector of colors (one per node). Overridden by group.colors if provided.}
+\item{node.color}{Vector of node colors. Overridden by group.colors if provided.}
 
-\item{groups}{Named list of node index groups (e.g., list("A" = 1:3, "B" = 4:6)).}
+\item{groups}{Named list of node index groups.}
 
 \item{group.colors}{Named vector mapping group names to hex colors.}
 
 \item{legend}{Logical: show legend?}
 
 \item{legend.cex}{Size of legend text.}
+
+\item{filename}{Optional: if provided, saves the plot to this file (supports PNG or PDF).}
 }
 \value{
 A qgraph plot.
 }
 \description{
-Plot a network graph using qgraph
+Plot a network graph using qgraph (with optional export)
 }
 \examples{
 # Simulate data
@@ -58,11 +58,10 @@ result <- compute_network(df, vars = c("A", "B", "C", "D"))
 groups <- list("Group1" = 1:2, "Group2" = 3:4)
 group.colors <- c("Group1" = "#3E9EAD", "Group2" = "#3E6795")
 
-# Plot network
-plot_network(result$networks[[1]],
-             title = "Grouped Network",
-             groups = groups,
-             group.colors = group.colors,
-             label.color = "white")
+# Plot to screen
+plot_network(result$networks[[1]], title = " Network", groups = groups, group.colors = group.colors)
+
+# Save to file
+plot_network(result$networks[[1]], filename = "network_plot.png", groups = groups, group.colors = group.colors)
 
 }
