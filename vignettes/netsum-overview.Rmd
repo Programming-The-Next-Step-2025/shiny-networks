@@ -94,7 +94,7 @@ Customize layout, title, labels, and group coloring:
 knitr::include_graphics("figures/plot_customization.png")
 ```
 
-### Output Plot 
+### Output Plot
 
 ```{r screenshot-plot, echo=FALSE, out.width='80%', fig.cap='Example network plot'}
 knitr::include_graphics("figures/plot.png")
@@ -127,7 +127,6 @@ You can export your results using the buttons in the main panel:
 
 -   **Plot (PNG/PDF)**
 -   **Centrality Table (CSV)**
-
 
 ## Testing and Reproducibility
 
