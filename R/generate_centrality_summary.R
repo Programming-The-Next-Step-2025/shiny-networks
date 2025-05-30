@@ -42,7 +42,7 @@ generate_centrality_summary <- function(centrality_data) {
     ),
     "ExpectedInfluence" = paste0(
       "capturing not just the number of connections but also their direction and strength, ",
-      "reflecting the node’s overall influence on the network"
+      "reflecting the node's overall influence on the network"
     )
   )
 
@@ -63,7 +63,8 @@ generate_centrality_summary <- function(centrality_data) {
       top_nodes <- head(data[order(-data[[metric]]), c("Node", metric)], 3)
       node_summary <- paste0(
         paste0(top_nodes$Node, " (", round(top_nodes[[metric]], 2), ")",
-               collapse = ", ")
+          collapse = ", "
+        )
       )
       explanation <- centrality_labels[[metric]]
       text_out <- c(text_out, paste0(
@@ -74,5 +75,3 @@ generate_centrality_summary <- function(centrality_data) {
 
   paste(text_out, collapse = "\n\n")
 }
-
-
