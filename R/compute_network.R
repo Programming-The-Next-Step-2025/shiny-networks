@@ -25,7 +25,6 @@
 #' @importFrom bootnet estimateNetwork
 
 compute_network <- function(data, vars, group_var = NULL, method = "EBICglasso", tuning = 0.25) {
-
   # Check group_var exists (if provided)
   if (!is.null(group_var)) {
     if (!group_var %in% colnames(data)) {
@@ -33,7 +32,7 @@ compute_network <- function(data, vars, group_var = NULL, method = "EBICglasso",
     }
   }
 
-  #define methods that don't accept tuning
+  # define methods that don't accept tuning
   no_tuning_methods <- c("pcor", "cor")
 
   # Check all selected vars are numeric
@@ -44,14 +43,13 @@ compute_network <- function(data, vars, group_var = NULL, method = "EBICglasso",
   # Helper to estimate a single network
   estimate <- function(df) {
     if (method %in% no_tuning_methods) {
-      net <- bootnet::estimateNetwork(df,default = method)
-
+      net <- bootnet::estimateNetwork(df, default = method)
     } else {
-      net <- bootnet::estimateNetwork(df,default = method,tuning = tuning)
+      net <- bootnet::estimateNetwork(df, default = method, tuning = tuning)
     }
 
     if (all(net$graph == 0)) {
-      attr(net, "empty_message") <- "⚠️ Empty network detected (no edges). Try adjusting tuning."
+      attr(net, "empty_message") <- "\u26A0\uFE0F Empty network detected (no edges). Try adjusting tuning."
     }
     return(net)
   }
@@ -73,13 +71,10 @@ compute_network <- function(data, vars, group_var = NULL, method = "EBICglasso",
     df_group <- data[data[[group_var]] == g, vars, drop = FALSE]
     net <- estimate(df_group)
     if (all(net$graph == 0)) {
-      attr(net, "empty_message") <- paste0("⚠️ Empty network for group '", g, "'. Try adjusting tuning.")
+      attr(net, "empty_message") <- paste0("\u26A0\uFE0F Empty network for group '", g, "'. Try adjusting tuning.")
     }
     return(net)
   })
 
   return(list(networks = network_list, groups = groups))
 }
-
-
-

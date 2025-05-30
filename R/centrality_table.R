@@ -50,7 +50,3 @@ get_centrality_table <- function(net, group = NULL) {
 
   return(df)
 }
-
-
-
-

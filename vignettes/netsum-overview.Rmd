@@ -72,7 +72,7 @@ launch_netsum_app()
 Upload a `.csv` via **Upload CSV File** and click **Check Data**. Select nodes and (optional) group variables.
 
 ```{r screenshot-upload, echo=FALSE, out.width='80%', fig.cap='Sample data upload screen'}
- knitr::include_graphics("figures/upload_csv.png")
+knitr::include_graphics("figures/upload_csv.png")
 ```
 
 ### Estimating Networks
@@ -91,13 +91,13 @@ Adjust `gamma` if needed and click **Estimate Network**.
 Customize layout, title, labels, and group coloring:
 
 ```{r screenshot-plot-customization, echo=FALSE, out.width='43%', fig.cap='Example network plot customization screen'}
- knitr::include_graphics("figures/plot_customization.png")
+knitr::include_graphics("figures/plot_customization.png")
 ```
 
 ### Output Plot 
 
 ```{r screenshot-plot, echo=FALSE, out.width='80%', fig.cap='Example network plot'}
- knitr::include_graphics("figures/plot.png")
+knitr::include_graphics("figures/plot.png")
 ```
 
 ### Centrality Analysis
@@ -112,13 +112,13 @@ Customize layout, title, labels, and group coloring:
 It shows a table of top 5 nodes by Strength and a narrative summary:
 
 ```{r screenshot-table, echo=FALSE, out.width='50%', fig.cap='Example centrality table'}
- knitr::include_graphics("figures/centrality_table.png")
+knitr::include_graphics("figures/centrality_table.png")
 ```
 
 The narrative summary appears below:
 
 ```{r screenshot-summary, echo=FALSE, out.width='80%'}
- knitr::include_graphics("figures/centrality_summary.png")
+knitr::include_graphics("figures/centrality_summary.png")
 ```
 
 ## Download Options
@@ -139,11 +139,11 @@ library(netsum)
 
 set.seed(42)
 Sigma <- diag(4)
-Sigma[1,3] <- Sigma[3,1] <- 0.8
-Sigma[2,4] <- Sigma[4,2] <- 0.8
+Sigma[1, 3] <- Sigma[3, 1] <- 0.8
+Sigma[2, 4] <- Sigma[4, 2] <- 0.8
 
 df_sim <- MASS::mvrnorm(200, rep(0, 4), Sigma) |> as.data.frame()
-colnames(df_sim) <- c("A","B","C","D")
+colnames(df_sim) <- c("A", "B", "C", "D")
 net_sim <- compute_network(df_sim, vars = colnames(df_sim), method = "cor")
 g <- net_sim$networks[[1]]
 plot_network(g, title = "Simulated A–C/B–D Network", layout = "spring", label.color = "black")

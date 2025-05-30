@@ -45,23 +45,23 @@ A qgraph plot.
 Plot a network graph using qgraph (with optional export)
 }
 \examples{
-# Simulate data
+# simulate data
 set.seed(1)
-df <- MASS::mvrnorm(100, mu = rep(0, 4), Sigma = diag(4))
-df <- as.data.frame(df)
-colnames(df) <- c("A", "B", "C", "D")
+df <- as.data.frame(MASS::mvrnorm(100, mu = rep(0, 4), Sigma = diag(4)))
+colnames(df) <- c("A","B","C","D")
 
-# Estimate network
-result <- compute_network(df, vars = c("A", "B", "C", "D"))
+# estimate network
+res <- compute_network(df, vars = c("A","B","C","D"))
 
-# Define groups and colors
-groups <- list("Group1" = 1:2, "Group2" = 3:4)
-group.colors <- c("Group1" = "#3E9EAD", "Group2" = "#3E6795")
+# define groups and colors
+groups <- list(Group1 = 1:2, Group2 = 3:4)
+group.colors <- c(Group1 = "#3E9EAD", Group2 = "#3E6795")
 
-# Plot to screen
-plot_network(result$networks[[1]], title = " Network", groups = groups, group.colors = group.colors)
-
-# Save to file
-plot_network(result$networks[[1]], filename = "network_plot.png", groups = groups, group.colors = group.colors)
-
+# write to a temp file, then delete it
+tmp <- tempfile(fileext = ".png")
+plot_network(res$networks[[1]],
+             filename     = tmp,
+             groups       = groups,
+             group.colors = group.colors)
+unlink(tmp)
 }

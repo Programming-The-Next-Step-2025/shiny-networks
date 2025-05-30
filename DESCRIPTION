@@ -1,5 +1,5 @@
 Package: netsum
-Type: Package/ Shiny app
+Type: Package
 Title: A Shiny App for Network Estimation, Visualization, and Summary
 Version: 0.1.0
 Authors@R: c(
@@ -13,7 +13,7 @@ Description: A point-and-click Shiny application for estimating and visualizing
     psychological or behavioral networks. Supports multiple estimation methods, 
     dynamic grouping and node coloring, centrality analysis, and auto-generated 
     summaries. Suitable for users with minimal R experience.
-License: What license is it under?
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
@@ -21,8 +21,9 @@ Imports:
   bootnet,
   qgraph,
   shiny,
-  colourpicker
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    MASS,
+    colourpicker
 VignetteBuilder: knitr

@@ -59,7 +59,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-  #--------- check csv and return output ------------------------------------------
+#--------- check csv and return output -----------------------------------------
   fileStatus <- reactiveVal(NULL)
 
   data <- reactive({
@@ -77,14 +77,14 @@ server <- function(input, output, session) {
     })
   })
 
-  #--------- update UI based on uploaded data -------------------------------------
+#--------- update UI based on uploaded data ------------------------------------
   observeEvent(data(), {
     vars <- names(data())
     updateCheckboxGroupInput(session, "vars", choices = vars, selected = vars)
     updateSelectizeInput(session, "group", choices = c("None" = "", vars), selected = "", server = TRUE)
   })
 
-  #--------- Compute Networks -----------------------------------------------------
+#--------- Compute Networks ----------------------------------------------------
   networkResult <- eventReactive(input$run_network, {
     df <- data()
     vars <- input$vars
@@ -105,7 +105,7 @@ server <- function(input, output, session) {
     return(paste(msgs, collapse = "\n"))
   })
 
-  #--------- Centrality Computation ------------------------------------------------
+#--------- Centrality Computation ----------------------------------------------
   centralityTables <- reactive({
     result <- networkResult()
     if (is.null(result) || is.null(result$networks)) return(NULL)
@@ -123,7 +123,7 @@ server <- function(input, output, session) {
     return(tables)
   })
 
-  #--------- Render Top 5 Central Nodes -------------------------------------------
+ #--------- Render Top 5 Central Nodes -----------------------------------------
   output$topNodes <- renderTable({
     tables <- centralityTables()
     if (length(tables) == 0) return(NULL)
@@ -138,7 +138,7 @@ server <- function(input, output, session) {
     do.call(rbind, top_list)
   })
 
-  #--------- Render Centrality Summary Text ----------------------------------------
+#--------- Render Centrality Summary Text --------------------------------------
   output$centralitySummary <- renderUI({
     tables <- centralityTables()
     if (length(tables) == 0) return("")
@@ -153,7 +153,7 @@ server <- function(input, output, session) {
     HTML(paste0("<div style='font-family: sans-serif; font-size: 15px;'>", wrapped, "</div>"))
   })
 
-  #--------- Dynamic Color Pickers ------------------------------------------------
+#--------- Dynamic Color Pickers -----------------------------------------------
   output$colorPickers <- renderUI({
     group_names <- strsplit(trimws(input$group_names), ",\\s*")[[1]]
     if (length(group_names) == 1 && group_names == "") return(NULL)
@@ -167,7 +167,7 @@ server <- function(input, output, session) {
     }) |> tagList()
   })
 
-  #--------- Group Legend ---------------------------------------------------------
+#--------- Group Legend --------------------------------------------------------
   output$groupLegendLabels <- renderUI({
     result <- networkResult()
     if (is.null(result) || is.null(result$networks)) return(NULL)
@@ -198,7 +198,7 @@ server <- function(input, output, session) {
   })
 
 
-  #--------- Plot Networks --------------------------------------------------------
+#--------- Plot Networks -------------------------------------------------------
   output$networkPlot <- renderPlot({
     req(input$run_network)
     result <- tryCatch(networkResult(), error = function(e) NULL)
@@ -243,7 +243,7 @@ server <- function(input, output, session) {
   })
 
 
-  #--------- Updated Plot Download Handlers (with group/colors/layout) -------------
+#--------- Updated Plot Download Handlers (with group/colors/layout) ---------
 
   output$downloadPlotPNG <- downloadHandler(
     filename = function() {
